@@ -1,0 +1,42 @@
+# AI提供商配置
+providers:
+  gpt4:  # 提供商标识符，用户自定义
+    type: openai  # 提供商类型，使用预设的处理方法
+    api_key: your_gpt4_api_key
+    base_url: https://api.openai.com/v1
+    model: gpt-4-turbo-preview
+    max_tokens: 2000
+
+  openai-azure:  # Azure OpenAI示例
+    type: openai
+    api_key: your_azure_api_key
+    base_url: https://your-resource.openai.azure.com
+    model: gpt-35-turbo
+    max_tokens: 2000
+
+  claude:
+    type: anthropic
+    api_key: your_anthropic_api_key
+    model: claude-3-sonnet
+    max_tokens: 2000
+
+  local-deepseek-r1-14b:
+    type: ollama
+    base_url: http://localhost:11434
+    model: deepseek-r1:14b
+    max_tokens: 2000
+
+  deepseek-api:
+    type: openai  # DeepSeek 使用 OpenAI 兼容接口
+    api_key: your_deepseek_api_key
+    base_url: https://api.deepseek.com/chat/completions
+    model: deepseek-chat
+    max_tokens: 2000
+
+# 默认的提供商优先级顺序
+priority:
+  - local-deepseek-r1-14b
+  - deepseek-api
+  - gpt4
+  - claude
+  - openai-azure

@@ -1,0 +1,21 @@
+ai-request-service/
+├── app/
+│   ├── __init__.py
+│   ├── main.py
+│   ├── config/
+│   │   ├── __init__.py
+│   │   └── settings.py
+│   ├── core/
+│   │   ├── __init__.py
+│   │   ├── ai_factory.py
+│   │   └── ai_provider.py
+│   ├── models/
+│   │   ├── __init__.py
+│   │   └── schemas.py
+│   └── api/
+│       ├── __init__.py
+│       └── endpoints/
+│           ├── __init__.py
+│           └── ai_request.py
+├── requirements.txt
+└── .env

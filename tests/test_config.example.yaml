@@ -1,0 +1,33 @@
+# 测试用AI提供商配置
+providers:
+  openai-test:
+    type: openai
+    api_key: test_key
+    base_url: https://api.openai.com/v1
+    model: gpt-3.5-turbo
+    max_tokens: 1000
+
+  anthropic-test:
+    type: anthropic
+    api_key: test_key
+    model: claude-3-sonnet
+    max_tokens: 1000
+
+  ollama-test:
+    type: ollama
+    base_url: http://localhost:11434
+    model: deepseek-r1:14b
+    max_tokens: 1000
+
+  deepseek-test:
+    type: openai
+    api_key: test_key
+    base_url: https://api.deepseek.com/chat/completions
+    model: deepseek-chat
+    max_tokens: 1000
+
+# 测试用优先级配置
+priority:
+  - openai-test
+  - anthropic-test
+  - ollama-test
