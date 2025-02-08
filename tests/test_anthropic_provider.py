@@ -3,9 +3,9 @@ from tests.conftest import format_response
 
 def test_anthropic_generate_success(mock_settings, client):
     response = client.post(
-        "/api/v1/generate",
+        "/api/v1/chat/completions",
         json={
-            "prompt": "你是谁？请介绍一下你自己",
+            "messages": [{"role": "user", "content": "你是谁？请介绍一下你自己"}],
             "providers": ["anthropic-test"]
         }
     )
@@ -15,4 +15,4 @@ def test_anthropic_generate_success(mock_settings, client):
 
     assert response.status_code == 200
     assert response.json()["provider"] == "anthropic-test"
-    assert "content" in response.json()
+    assert "choices" in response.json()

@@ -3,16 +3,16 @@ from unittest.mock import patch, mock_open
 
 def test_empty_prompt(mock_settings, client):
     response = client.post(
-        "/api/v1/generate",
-        json={"prompt": ""}
+        "/api/v1/chat/completions",
+        json={"messages": [{"role": "user", "content": ""}]}
     )
     assert response.status_code == 422
 
 def test_invalid_provider(mock_settings, client):
     response = client.post(
-        "/api/v1/generate",
+        "/api/v1/chat/completions",
         json={
-            "prompt": "测试问题",
+            "messages": [{"role": "user", "content": "你是谁？请介绍一下你自己"}],
             "providers": ["invalid-provider"]
         }
     )

@@ -1,4 +1,5 @@
-from pydantic import BaseSettings, Field, PrivateAttr
+from pydantic import Field, PrivateAttr
+from pydantic_settings import BaseSettings
 from typing import Dict, List, Optional
 import yaml
 from functools import lru_cache
@@ -26,7 +27,7 @@ class Settings(BaseSettings):
     PROJECT_NAME: str = "AI Request Service"
 
     # 配置文件路径
-    CONFIG_PATH: str = Field("config.yaml", env="CONFIG_PATH")
+    CONFIG_PATH: str = Field("config.yaml", alias="CONFIG_PATH")
 
     # 使用 PrivateAttr 声明私有属性
     _config: Dict = PrivateAttr(default_factory=dict)

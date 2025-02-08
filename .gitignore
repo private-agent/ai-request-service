@@ -144,6 +144,11 @@ env.py.demo
 config.yaml
 tests/test_config.yaml
 
+# Logs
+logs/
+*.log
+ars_*.log*
+
 ### Python template
 # Byte-compiled / optimized / DLL files
 __pycache__/

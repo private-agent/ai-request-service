@@ -4,7 +4,7 @@
 
 ## 功能特点
 
-- 支持多种类型的 AI 提供商（OpenAI兼容接口、Anthropic、Ollama等）
+- 支持多种类型的 AI 提供商（OpenAI 兼容接口、Anthropic、Ollama 等）
 - 通过 YAML 配置文件灵活配置提供商
 - 可配置的提供商优先级顺序
 - 自动故障转移机制
@@ -12,7 +12,7 @@
 
 ## 支持的提供商类型
 
-- OpenAI 兼容接口 (OpenAI、Azure OpenAI、DeepSeek等)
+- OpenAI 兼容接口 (OpenAI、Azure OpenAI、DeepSeek 等)
 - Anthropic Claude
 - Ollama（本地模型）
 
@@ -62,20 +62,21 @@ priority:
 
 ```bash
 # 构建并启动服务
-docker-compose up -d
+docker compose up -d
 
 # 查看日志
-docker-compose logs -f
+docker compose logs -f
+
+# 或者
+docker-up.sh -d
 ```
 
 ### 3. 本地开发
 
 ```bash
-# 创建虚拟环境
-python -m venv venv
-source venv/bin/activate  # Linux/Mac
-# 或
-.\venv\Scripts\activate  # Windows
+# 创建虚拟环境，基于miniconda
+conda create -n ars python=3.10
+conda activate ars
 
 # 安装依赖
 pip install -r requirements.txt
@@ -89,16 +90,16 @@ uvicorn app.main:app --reload
 ### 生成 AI 响应
 
 ```bash
-curl -X POST "http://localhost:8000/api/v1/generate" \
+curl -X POST "http://localhost:8000/api/chat/completions" \
 -H "Content-Type: application/json" \
 -d '{
-    "prompt": "你好，请介绍一下你自己",
+    "messages": [{"role": "user", "content": "你好，请介绍一下你自己"}],
     "providers": ["local-deepseek", "deepseek-api"]
 }'
 ```
 
 参数说明：
-- `prompt`: 要发送给 AI 的提示词
+- `messages`: 要发送给 AI 的消息列表，包含角色和内容
 - `providers`: （可选）指定使用的 AI 提供商及其优先级顺序，不指定则使用配置文件中的默认顺序
 
 响应示例：
