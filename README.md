@@ -75,7 +75,7 @@ docker-up.sh -d
 
 ```bash
 # 创建虚拟环境，基于miniconda
-conda create -n ars python=3.10
+conda create -n ars python=3.11
 conda activate ars
 
 # 安装依赖
@@ -90,11 +90,11 @@ uvicorn app.main:app --reload
 ### 生成 AI 响应
 
 ```bash
-curl -X POST "http://localhost:8000/api/chat/completions" \
+curl -X POST "http://localhost:8000/api/v1/chat/completions" \
 -H "Content-Type: application/json" \
 -d '{
     "messages": [{"role": "user", "content": "你好，请介绍一下你自己"}],
-    "providers": ["local-deepseek", "deepseek-api"]
+    "providers": ["siliconflow-deepseek-r1-pro", "siliconflow-deepseek-v3"]
 }'
 ```
 
@@ -105,11 +105,44 @@ curl -X POST "http://localhost:8000/api/chat/completions" \
 响应示例：
 ```json
 {
-    "provider": "local-deepseek",
-    "model": "deepseek-r1:14b",
-    "content": "AI的回复内容..."
+  "id": "0194e35428361d84cd876253d48d58b2",
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "logprobs": null,
+      "message": {
+        "content": "你好！...省略",
+        "refusal": null,
+        "role": "assistant",
+        "audio": null,
+        "function_call": null,
+        "tool_calls": null,
+        "reasoning_content": "好的，...省略"
+      }
+    }
+  ],
+  "created": 1738980730,
+  "model": "Pro/deepseek-ai/DeepSeek-R1",
+  "object": "chat.completion",
+  "service_tier": null,
+  "system_fingerprint": "",
+  "usage": {
+    "completion_tokens": 230,
+    "prompt_tokens": 10,
+    "total_tokens": 240,
+    "completion_tokens_details": null,
+    "prompt_tokens_details": null
+  },
+  "provider": "siliconflow-deepseek-r1-pro"
 }
 ```
+
+参数说明：
+- `content`: 生成的响应内容
+- `reasoning_content`: 思维链推理内容，在模型支持的情况下存在该字段
+- `model`: 实际使用的模型
+- `provider`: 实际使用的提供商配置
 
 ## 配置说明
 
