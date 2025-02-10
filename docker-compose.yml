@@ -10,7 +10,7 @@ services:
       - ./config.yaml:/app/config.yaml
       - ./logs:/app/logs
     environment:
-      - LOG_LEVEL=INFO
+      - LOG_LEVEL=DEBUG
       - LOG_DIR=/app/logs
       - LOG_FILE_SIZE=100M
       - LOG_BACKUP_COUNT=10

@@ -7,17 +7,23 @@ from ...utils.logger import logger
 
 router = APIRouter()
 
+
 @router.post("/chat/completions", response_model=AIResponse)
 async def generate_response(request: AIRequest):
     settings = get_settings()
     providers = request.providers or settings.AI_PRIORITY
 
     logger.info(f"开始处理AI请求，尝试的提供商顺序: {providers}")
-    logger.info("对话内容: ")
-    for message in request.messages:
-        if message.get('role') == "system":
-            continue
-        logger.info(f"角色: {message.get('role')}, 内容: {message.get('content')}")
+    logger.info(
+        "对话内容（已过滤system角色）: \n"
+        + "\n".join(
+            [
+                f"  角色: {message.get('role')}, 内容: {message.get('content')}"
+                for message in request.messages
+                if message.get("role") != "system"
+            ]
+        )
+    )
 
     last_error = None
     for provider_name in providers:
@@ -27,9 +33,10 @@ async def generate_response(request: AIRequest):
             response = await provider.generate_response(
                 messages=request.messages,
                 max_tokens=request.max_tokens,
-                temperature=request.temperature
+                temperature=request.temperature,
             )
             logger.info(f"AI提供商 {provider_name} 成功生成响应")
+            logger.debug(f"AI响应: \n{json.dumps(response.model_dump(), ensure_ascii=False, indent=2)}")
             return response
         except Exception as e:
             last_error = str(e)
@@ -38,7 +45,4 @@ async def generate_response(request: AIRequest):
 
     error_msg = f"所有AI提供商都失败了。最后的错误: {last_error}"
     logger.error(error_msg)
-    raise HTTPException(
-        status_code=500,
-        detail=error_msg
-    )
+    raise HTTPException(status_code=500, detail=error_msg)

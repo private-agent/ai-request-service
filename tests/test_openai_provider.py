@@ -15,7 +15,7 @@ def test_openai_generate_success(mock_settings, client):
 
     assert response.status_code == 200
     assert response.json()["provider"] == "deepseek-test"
-    assert "content" in response.json()
+    assert "choices" in response.json()
 
 def test_openai_error_fallback(mock_settings, client):
     response = client.post(
