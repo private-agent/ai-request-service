@@ -11,9 +11,11 @@ router = APIRouter()
 @router.post("/chat/completions", response_model=AIResponse)
 async def generate_response(request: AIRequest):
     settings = get_settings()
-    providers = request.providers or settings.AI_PRIORITY
+    # 解析用户请求中的分组
+    raw_providers = request.providers or settings.AI_PRIORITY
+    providers = settings.resolve_providers(raw_providers)
 
-    logger.info(f"开始处理AI请求，尝试的提供商顺序: {providers}")
+    logger.info(f"开始处理AI请求，解析后的提供商顺序: {providers}")
     logger.info(
         "对话内容（已过滤system角色）: \n"
         + "\n".join(

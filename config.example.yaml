@@ -33,10 +33,20 @@ providers:
     model: deepseek-chat
     max_tokens: 2000
 
-# 默认的提供商优先级顺序
+# 提供商分组配置
+groups:
+  local-models:  # 本地部署模型组
+    - local-deepseek-r1-14b
+  cloud-services:  # 云服务提供商组
+    - gpt4
+    - claude
+    - openai-azure
+  deepseek-all:  # DeepSeek 全系列
+    - deepseek-api
+    - local-deepseek-r1-14b
+
+# 默认的提供商优先级顺序（支持组名和提供商名混合）
 priority:
-  - local-deepseek-r1-14b
-  - deepseek-api
-  - gpt4
-  - claude
-  - openai-azure
+  - local-models    # 优先尝试本地模型
+  - deepseek-all    # 其次尝试DeepSeek系列
+  - cloud-services  # 最后使用其他云服务

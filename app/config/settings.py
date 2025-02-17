@@ -33,6 +33,7 @@ class Settings(BaseSettings):
     _config: Dict = PrivateAttr(default_factory=dict)
     _providers: Dict[str, ProviderConfig] = PrivateAttr(default_factory=dict)
     _priority: List[str] = PrivateAttr(default_factory=list)
+    _groups: Dict[str, List[str]] = PrivateAttr(default_factory=dict)
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -70,10 +71,29 @@ class Settings(BaseSettings):
         if invalid_providers:
             raise ValueError(f"优先级列表中存在未配置的提供商: {', '.join(invalid_providers)}")
 
+        # 新增分组配置加载
+        self._groups = self._config.get('groups', {})
+
+        # 验证分组中的提供商是否都存在
+        for group_name, providers in self._groups.items():
+            invalid_providers = [p for p in providers if p not in self._providers]
+            if invalid_providers:
+                raise ValueError(f"分组 '{group_name}' 包含未配置的提供商: {', '.join(invalid_providers)}")
+
+    def resolve_providers(self, providers: List[str]) -> List[str]:
+        """解析包含分组的提供商列表"""
+        resolved = []
+        for item in providers:
+            if item in self._groups:
+                resolved.extend(self._groups[item])
+            else:
+                resolved.append(item)
+        return resolved
+
     @property
     def AI_PRIORITY(self) -> List[str]:
-        """获取AI提供商优先级列表"""
-        return self._priority
+        """获取解析后的优先级列表"""
+        return self.resolve_providers(self._priority)
 
     @property
     def AI_MODELS(self) -> Dict[str, Dict]:

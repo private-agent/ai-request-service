@@ -26,6 +26,11 @@ providers:
     model: deepseek-chat
     max_tokens: 1000
 
+groups:
+  primary:
+    - deepseek-test
+    - ollama-test
+
 # 测试用优先级配置
 priority:
   - openai-test

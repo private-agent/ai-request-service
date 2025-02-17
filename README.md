@@ -5,10 +5,11 @@
 ## 功能特点
 
 - 支持多种类型的 AI 提供商（OpenAI 兼容接口、Anthropic、Ollama 等）
-- 通过 YAML 配置文件灵活配置提供商
-- 可配置的提供商优先级顺序
+- 通过 YAML 配置文件灵活配置提供商和分组
+- 可配置的提供商优先级顺序（支持组名和提供商名混合）
 - 自动故障转移机制
 - Docker 部署支持
+- 支持提供商分组配置，简化优先级管理
 
 ## 支持的提供商类型
 
@@ -51,11 +52,23 @@ providers:
     model: deepseek-chat
     max_tokens: 2000
 
-# 默认的提供商优先级顺序
+# 新增分组配置
+groups:
+  local-models:  # 本地部署模型组
+    - local-deepseek-r1-14b
+  cloud-services:  # 云服务提供商组
+    - gpt4
+    - claude
+    - openai-azure
+  deepseek-all:  # DeepSeek 全系列
+    - deepseek-api
+    - local-deepseek-r1-14b
+
+# 更新后的优先级配置（支持组名）
 priority:
-  - local-deepseek
-  - deepseek-api
-  - gpt4
+  - local-models    # 优先尝试本地模型
+  - deepseek-all    # 其次尝试DeepSeek系列
+  - cloud-services  # 最后使用其他云服务
 ```
 
 ### 2. Docker 部署
@@ -94,13 +107,13 @@ curl -X POST "http://localhost:8000/api/v1/chat/completions" \
 -H "Content-Type: application/json" \
 -d '{
     "messages": [{"role": "user", "content": "你好，请介绍一下你自己"}],
-    "providers": ["siliconflow-deepseek-r1-pro", "siliconflow-deepseek-v3"]
+    "providers": ["local-models", "deepseek-all"]
 }'
 ```
 
 参数说明：
 - `messages`: 要发送给 AI 的消息列表，包含角色和内容
-- `providers`: （可选）指定使用的 AI 提供商及其优先级顺序，不指定则使用配置文件中的默认顺序
+- `providers`: （可选）指定使用的 AI 提供商或组名及其优先级顺序，支持混合使用（如 ["group1", "provider-a"]）
 
 响应示例：
 ```json
@@ -168,6 +181,27 @@ curl -X POST "http://localhost:8000/api/v1/chat/completions" \
 - `base_url`: API基础URL
 - `model`: 使用的模型名称（必需）
 - `max_tokens`: 最大生成token数（可选，默认2000）
+
+### 新增分组配置说明
+
+```yaml
+groups:
+  组名1:
+    - 提供商标识1
+    - 提供商标识2
+  组名2:
+    - 提供商标识3
+```
+
+特性：
+- 支持嵌套分组（组内可以包含其他组名）
+- 自动展开分组为实际的提供商列表
+- 配置验证确保分组中的提供商都已定义
+
+### 优先级配置
+- 支持混合使用组名和提供商标识
+- 组名会自动展开为组内配置的提供商顺序
+- 示例：`["group1", "provider-a"]` 会先尝试 group1 的所有提供商，再尝试 provider-a
 
 ## 运行测试
 
