@@ -7,7 +7,7 @@ ChatMessage = ChatCompletionMessageParam
 
 class AIRequest(BaseModel):
     messages: List[ChatMessage]
-    providers: Optional[List[str]] = None
+    model: Optional[str] = None
     stream: Optional[bool] = False
     temperature: Optional[float] = Field(default=0.7, ge=0.0, le=2.0)
     max_tokens: Optional[int] = None

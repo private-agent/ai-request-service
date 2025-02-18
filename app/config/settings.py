@@ -4,6 +4,7 @@ from typing import Dict, List, Optional
 import yaml
 from functools import lru_cache
 import os
+from ..utils.logger import logger
 
 class ProviderConfig:
     """单个提供商的配置"""
@@ -43,6 +44,7 @@ class Settings(BaseSettings):
         """加载YAML配置文件"""
         # 优先使用环境变量中的配置路径
         config_path = os.getenv("CONFIG_PATH", self.CONFIG_PATH)
+        logger.info(f"开始加载配置文件，当前路径: {config_path}")
 
         # 如果是测试环境，使用测试配置文件
         if os.getenv("TESTING") == "true":
@@ -51,43 +53,89 @@ class Settings(BaseSettings):
                 "tests",
                 "test_config.yaml"
             )
+            logger.info(f"检测到测试环境，使用测试配置文件: {config_path}")
 
         if not os.path.exists(config_path):
-            raise FileNotFoundError(f"配置文件不存在: {config_path}")
+            error_msg = f"配置文件不存在: {config_path}"
+            logger.critical(error_msg)
+            raise FileNotFoundError(error_msg)
 
+        logger.info(f"正在加载配置文件: {config_path}")
         with open(config_path, 'r', encoding='utf-8') as f:
             self._config = yaml.safe_load(f)
+        logger.debug("配置文件原始内容加载完成")
 
         # 加载提供商配置
         providers_config = self._config.get('providers', {})
+        logger.info(f"发现 {len(providers_config)} 个提供商配置")
         for name, config in providers_config.items():
             self._providers[name] = ProviderConfig(**config)
+        logger.debug("提供商配置加载完成")
 
         # 加载并验证优先级配置
         self._priority = self._config.get('priority', [])
+        logger.info(f"加载优先级配置: {self._priority}")
 
         # 检查优先级列表中的所有提供商是否都已配置
         invalid_providers = [p for p in self._priority if p not in self._providers]
         if invalid_providers:
-            raise ValueError(f"优先级列表中存在未配置的提供商: {', '.join(invalid_providers)}")
+            error_msg = f"优先级列表中存在未配置的提供商: {', '.join(invalid_providers)}"
+            logger.error(error_msg)
+            raise ValueError(error_msg)
+        logger.info("优先级配置验证通过")
 
         # 新增分组配置加载
         self._groups = self._config.get('groups', {})
+        logger.info(f"加载 {len(self._groups)} 个分组配置")
 
         # 验证分组中的提供商是否都存在
         for group_name, providers in self._groups.items():
+            logger.debug(f"验证分组 '{group_name}' 的提供商列表: {providers}")
             invalid_providers = [p for p in providers if p not in self._providers]
             if invalid_providers:
-                raise ValueError(f"分组 '{group_name}' 包含未配置的提供商: {', '.join(invalid_providers)}")
+                error_msg = f"分组 '{group_name}' 包含未配置的提供商: {', '.join(invalid_providers)}"
+                logger.error(error_msg)
+                raise ValueError(error_msg)
+        logger.info("分组配置验证通过")
 
-    def resolve_providers(self, providers: List[str]) -> List[str]:
-        """解析包含分组的提供商列表"""
+    def resolve_providers(self, providers: Optional[str] = None) -> List[str]:
+        """解析包含分组的提供商列表，保持顺序并去重"""
         resolved = []
-        for item in providers:
-            if item in self._groups:
-                resolved.extend(self._groups[item])
-            else:
-                resolved.append(item)
+        seen = set()  # 用于跟踪已添加的提供商
+
+        if providers:
+            logger.debug(f"解析包含分组的model参数: {providers}")
+            # 清理输入并分割参数
+            items = providers.strip().strip(";").split(";")
+
+            for item in items:
+                if not item:
+                    continue
+
+                if item in self._groups:
+                    # 处理分组中的每个提供商
+                    for provider in self._groups[item]:
+                        if provider not in seen:
+                            seen.add(provider)
+                            resolved.append(provider)
+                            logger.debug(f"添加分组 {item} 中的提供商: {provider}")
+                else:
+                    # 处理单个提供商
+                    if item not in seen:
+                        seen.add(item)
+                        resolved.append(item)
+                        logger.debug(f"添加独立提供商: {item}")
+
+                logger.debug(f"当前解析进度: {resolved}")
+        else:
+            # 处理默认优先级时也去重
+            seen = set()
+            for item in self._priority:
+                if item not in seen:
+                    seen.add(item)
+                    resolved.append(item)
+
+        logger.info(f"最终解析后的去重提供商列表: {resolved}")
         return resolved
 
     @property

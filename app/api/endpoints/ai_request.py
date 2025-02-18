@@ -12,8 +12,8 @@ router = APIRouter()
 async def generate_response(request: AIRequest):
     settings = get_settings()
     # 解析用户请求中的分组
-    raw_providers = request.providers or settings.AI_PRIORITY
-    providers = settings.resolve_providers(raw_providers)
+    raw_model = request.model
+    providers = settings.resolve_providers(raw_model)
 
     logger.info(f"开始处理AI请求，解析后的提供商顺序: {providers}")
     logger.info(
