@@ -58,6 +58,14 @@ class OpenAIFormatProvider(AIProvider):
             )
 
             logger.info(f"[{self.provider_name}] 成功生成响应")
+
+            try:
+                content = response.choices[0].message.content
+                if content:
+                    response.choices[0].message.content = content.strip()
+            except:
+                pass
+
             return ExtendedChatCompletion(
                 **response.model_dump(), provider=self.provider_name
             )
@@ -156,8 +164,8 @@ class OllamaProvider(AIProvider):
         if ollama_response.message.content and "</tink>" in ollama_response.message.content:
             reasoning_content = ollama_response.message.content.split("</tink>")[
                 0
-            ].replace("<tink>", "")
-            message_content = ollama_response.message.content.split("</tink>")[1]
+            ].replace("<tink>", "").strip()
+            message_content = ollama_response.message.content.split("</tink>")[1].strip()
         else:
             reasoning_content = None
             message_content = ollama_response.message.content
